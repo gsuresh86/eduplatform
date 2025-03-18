@@ -1,17 +1,19 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/providers/cart-provider";
 import { TrashIcon } from "@heroicons/react/24/outline";
+import { toast } from "react-hot-toast";
 
 export default function CartPage() {
   const router = useRouter();
   const { data: session, status } = useSession();
   const { cartItems, cartTotal, isLoading, removeFromCart } = useCart();
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -19,6 +21,36 @@ export default function CartPage() {
       router.push("/login?callbackUrl=/cart");
     }
   }, [status, router]);
+
+  const handleCheckout = async () => {
+    try {
+      setIsCheckingOut(true);
+
+      const response = await fetch("/api/checkout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to create checkout session");
+      }
+
+      // Redirect to Stripe checkout
+      if (data.checkoutUrl) {
+        window.location.href = data.checkoutUrl;
+      } else {
+        throw new Error("No checkout URL returned");
+      }
+    } catch (error) {
+      console.error("Checkout error:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to proceed to checkout");
+      setIsCheckingOut(false);
+    }
+  };
 
   if (status === "loading" || isLoading) {
     return (
@@ -98,6 +130,7 @@ export default function CartPage() {
                           <button
                             onClick={() => removeFromCart(item.id)}
                             className="mt-2 text-red-600 hover:text-red-800 flex items-center text-sm"
+                            disabled={isCheckingOut}
                           >
                             <TrashIcon className="h-4 w-4 mr-1" />
                             Remove
@@ -127,13 +160,26 @@ export default function CartPage() {
               </div>
             </div>
             <button
-              className="w-full mt-6 py-3 px-4 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
+              onClick={handleCheckout}
+              disabled={isCheckingOut}
+              className={`w-full mt-6 py-3 px-4 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition ${
+                isCheckingOut ? 'opacity-70 cursor-not-allowed' : ''
+              }`}
             >
-              Proceed to Checkout
+              {isCheckingOut ? (
+                <span className="flex items-center justify-center">
+                  <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></span>
+                  Processing...
+                </span>
+              ) : (
+                "Proceed to Checkout"
+              )}
             </button>
             <Link
               href="/courses"
-              className="w-full block text-center mt-4 py-3 px-4 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition"
+              className={`w-full block text-center mt-4 py-3 px-4 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition ${
+                isCheckingOut ? 'opacity-70 pointer-events-none' : ''
+              }`}
             >
               Continue Shopping
             </Link>

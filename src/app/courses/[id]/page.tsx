@@ -70,7 +70,7 @@ async function getCourseById(id: string) {
   }
 }
 
-export default async function CourseDetailPage({ params }) {
+export default async function CourseDetailPage({ params }: { params: { id: string } }) {
   const course = await getCourseById(params.id);
   
   if (!course) {
