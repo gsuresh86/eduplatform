@@ -21,6 +21,13 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  // Updated experimental features
+  experimental: {
+    // Enable features that help with NextAuth
+    serverActions: {
+      allowedOrigins: ['localhost:3001'],
+    },
+  },
 };
 
 export default nextConfig;
