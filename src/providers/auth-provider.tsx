@@ -13,6 +13,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
       // Set a shorter than default refresh interval to help prevent session issues
       refetchInterval={5 * 60} // Refresh session every 5 minutes
       refetchOnWindowFocus={true}
+      // Point to the Pages Router path for NextAuth
+      basePath="/api/auth"
     >
       {children}
     </SessionProvider>

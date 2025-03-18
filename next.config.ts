@@ -1,16 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  images: {
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'images.unsplash.com',
-        port: '',
-        pathname: '/**',
-      },
-    ],
-  },
+  // Move Pages Router into src directory
+  pageExtensions: ['ts', 'tsx', 'js', 'jsx'],
+  // Set the source directory to search for pages
+
   // Add external packages to fix module resolution
   serverExternalPackages: ['@prisma/client', 'bcrypt'],
   // Ignore ESLint errors during build
@@ -25,8 +19,18 @@ const nextConfig: NextConfig = {
   experimental: {
     // Enable features that help with NextAuth
     serverActions: {
-      allowedOrigins: ['localhost:3001'],
+      allowedOrigins: ['localhost:3000'],
     },
+  },
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+        port: '',
+        pathname: '/**',
+      },
+    ],
   },
 };
 
