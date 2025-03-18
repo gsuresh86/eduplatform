@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { hash } from "bcrypt";
-import { db } from "@/lib/db";
+import { PrismaClient } from "@prisma/client";
+
+// Create a new PrismaClient instance
+const prisma = new PrismaClient();
 
 export async function POST(req: Request) {
   try {
@@ -15,7 +18,7 @@ export async function POST(req: Request) {
     }
 
     // Check if user already exists
-    const existingUser = await db.user.findUnique({
+    const existingUser = await prisma.user.findUnique({
       where: { email },
     });
 
@@ -30,7 +33,7 @@ export async function POST(req: Request) {
     const hashedPassword = await hash(password, 10);
 
     // Create user
-    const user = await db.user.create({
+    const user = await prisma.user.create({
       data: {
         name,
         email,
@@ -40,7 +43,14 @@ export async function POST(req: Request) {
     });
 
     // Return user without password
-    const { password: _, ...userWithoutPassword } = user;
+    const userWithoutPassword = {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+    };
 
     return NextResponse.json(userWithoutPassword, { status: 201 });
   } catch (error) {
@@ -49,5 +59,8 @@ export async function POST(req: Request) {
       { error: "An error occurred during registration" },
       { status: 500 }
     );
+  } finally {
+    // Disconnect PrismaClient to avoid connection issues
+    await prisma.$disconnect();
   }
 } 

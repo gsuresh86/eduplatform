@@ -1,6 +1,5 @@
 import Image from "next/image";
-import Link from "next/link";
-import { ShoppingCartIcon, PlayCircleIcon, ClockIcon, DocumentTextIcon } from "@heroicons/react/24/outline";
+import { PlayCircleIcon, ClockIcon, DocumentTextIcon } from "@heroicons/react/24/outline";
 import { ClientCourseActions } from "@/components/client-course-actions";
 import { db } from "@/lib/db";
 import { notFound } from "next/navigation";
@@ -71,7 +70,7 @@ async function getCourseById(id: string) {
   }
 }
 
-export default async function CourseDetailPage({ params }: { params: { id: string } }) {
+export default async function CourseDetailPage({ params }) {
   const course = await getCourseById(params.id);
   
   if (!course) {
